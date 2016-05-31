@@ -17,5 +17,5 @@ def test_daogroup():
     group_starlist = [first_group, second_group]
     starlist = vstack([first_group, second_group])
 
-    assert_array_equal(daogroup(starlist, crit_separation=0.6),
-                       group_starlist)
+    groups = daogroup(starlist, crit_separation=0.6)
+    assert_array_equal(groups, group_starlist)

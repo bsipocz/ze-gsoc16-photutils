@@ -18,7 +18,7 @@ def daogroup(starlist, crit_separation=None):
     ----------
     starlist : `~astropy.table.Table` or array-like
         List of stars positions.
-        If `~astropy.Table`, columns should be named 'x_0' and 'y_0'.
+        If `~astropy.table.Table`, columns should be named 'x_0' and 'y_0'.
         Additionally, 'flux_0' may also be provided. 
         TODO: If array-like, it should be either (x_0, y_0) or
         (x_0, y_0, flux_0).
@@ -31,9 +31,9 @@ def daogroup(starlist, crit_separation=None):
     
     Returns
     -------
-    group_starlist : list of `~astropy.Table`
-        Each `~astropy.Table` in the list corresponds to a group of mutually
-        overlapping starts.
+    group_starlist : list of `~astropy.table.Table`
+        Each `~astropy.table.Table` in the list corresponds to a group of
+        mutually overlapping starts.
 
     Notes
     -----
@@ -55,8 +55,8 @@ def daogroup(starlist, crit_separation=None):
         assigned_stars_ids = np.intersect1d(starlist['id'], init_group['id'],
                                             assume_unique=True)
         starlist = _remove_stars(starlist, assigned_stars_ids)
-        N = len(init_group)
         n = 1
+        N = len(init_group)
         while(n < N):    
             tmp_group = _find_group(init_group[n], starlist, crit_separation)
             if len(tmp_group) > 0:
@@ -95,17 +95,24 @@ def _find_group(star, starlist, crit_separation):
 
 def _remove_stars(starlist, stars_ids):
     """
-    Remove stars whose id is `stars_ids` from `starlist`.
+    Remove stars from `starlist` whose ids are in `stars_ids`.
 
     Parameters
     ----------
     starlist : `~astropy.table.table.Table`
+        Star list from which stars will be removed.
 
     stars_ids : numpy.ndarray
+        IDs of the stars which will be removed.
 
     Returns
     -------
-    `~astropy.table.table.Table`
+    Reduced `~astropy.table.Table` containing only the stars whose ids are not
+    listed in `stars_ids`.
+
+    Note
+    ----
+    **There may be a better (faster) way of implementing this**.
     """
     
     for i in range(len(stars_ids)):
