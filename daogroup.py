@@ -1,7 +1,14 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+"""Functions for implementing the DAOGROUP algorithm proposed by Stetson 1987.
+"""
+
+from __future__ import division
 import numpy as np
 from astropy.table import Column, Table, vstack
 
-def daogroup(starlist, crit_separation=None):
+__all__ = ['daogroup']
+
+def daogroup(starlist, crit_separation):
     """
     This is an implementation which follows the DAO GROUP algorithm presented
     by Stetson (1987).
@@ -24,7 +31,7 @@ def daogroup(starlist, crit_separation=None):
         (x_0, y_0, flux_0).
         If 'starlist' only contains x_0 and y_0, 'crit_separation' must be
         provided.
-    crit_separation : float (optional)
+    crit_separation : float
         Distance, in units of pixels, such that any two stars separated by
         less than this distance will be placed in the same group.
         TODO: If None, 'flux_0' must be provided in 'starlist'.
@@ -45,25 +52,36 @@ def daogroup(starlist, crit_separation=None):
     `~daofind`
     """
 
-    group_starlist = []
+    if not isinstance(crit_separation, type(1.0)):
+        raise ValueError('crit_separation is expected to be float.')
+    if crit_separation < 0.0:
+        raise ValueError('crit_separation is expected to be a positive' +
+                         'real number.')
 
-    if 'id' not in starlist.colnames:
-        starlist.add_column(Column(name='id', data=np.arange(len(starlist))))
+    ## write a method that varifies whether the starlist given by the user
+    ## is valid
+
+    group_starlist = []
+    cstarlist = starlist.copy()
+
+    if 'id' not in cstarlist.colnames:
+        cstarlist.add_column(Column(name='id',
+                                    data=np.arange(len(cstarlist))))
     
-    while len(starlist) is not 0:
-        init_group = _find_group(starlist[0], starlist, crit_separation)
-        assigned_stars_ids = np.intersect1d(starlist['id'], init_group['id'],
+    while len(cstarlist) is not 0:
+        init_group = _find_group(cstarlist[0], cstarlist, crit_separation)
+        assigned_stars_ids = np.intersect1d(cstarlist['id'], init_group['id'],
                                             assume_unique=True)
-        starlist = _remove_stars(starlist, assigned_stars_ids)
+        cstarlist = _remove_stars(cstarlist, assigned_stars_ids)
         n = 1
         N = len(init_group)
         while(n < N):    
-            tmp_group = _find_group(init_group[n], starlist, crit_separation)
+            tmp_group = _find_group(init_group[n], cstarlist, crit_separation)
             if len(tmp_group) > 0:
-                assigned_stars_ids = np.intersect1d(starlist['id'],
+                assigned_stars_ids = np.intersect1d(cstarlist['id'],
                                                     tmp_group['id'],
                                                     assume_unique=True)
-                starlist = _remove_stars(starlist, assigned_stars_ids)
+                cstarlist = _remove_stars(cstarlist, assigned_stars_ids)
                 init_group = vstack([init_group, tmp_group])
                 N = len(init_group)
             n = n + 1
