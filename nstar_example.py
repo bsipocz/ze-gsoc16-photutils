@@ -63,14 +63,19 @@ plt.ylabel('y-position (pixel units)')
 plt.subplot(1, 2, 2)
 for i in range(len(groups)):
     for j in range(len(groups[i]['id'])):
-        #plt.text(groups[i]['x_0'][j], groups[i]['y_0'][j],
-        #         str(groups[i]['id'][j]))
+        # show ids
+        # plt.text(groups[i]['x_0'][j], groups[i]['y_0'][j],
+        #          str(groups[i]['id'][j]))
         aperture = CircularAperture((groups[i]['x_0'][j],
                                      groups[i]['y_0'][j]),
                                      r=sigma_psf*gaussian_sigma_to_fwhm)
         aperture.plot(lw=1.5, alpha=0.5)
-residual_image = nstar(image-bkg, groups, (5,5), fitting.LevMarLSQFitter(),
-                       IntegratedGaussianPRF, sigma=2.0)
+tab, residual_image = nstar(image-bkg, groups, (5,5),
+                            fitting.LevMarLSQFitter(),
+                            IntegratedGaussianPRF, sigma=2.0)
+tab.sort('id')
+tab.write('starlist_estimated.html')
+
 plt.imshow(residual_image, origin='lower', interpolation='nearest')
 plt.title('Residual')
 plt.xlabel('x-position (pixel units)')
